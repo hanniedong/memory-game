@@ -19,7 +19,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
 	return (
 		<div className='item'>
-			<div className={toggled ? 'toggled' : ''}>
+			<div className={toggled ? 'toggled' : 'item'}>
 				<div className='face'>
 					{toggled && <div className='number'>{item.value}</div>}
 				</div>

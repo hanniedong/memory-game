@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import './card.css';
 
 interface CardProps {
@@ -8,15 +8,22 @@ interface CardProps {
 	};
 	handleSelectedCards: (item: any) => void;
 	toggled: boolean;
-	stopflip?: boolean;
+	stopFlip?: boolean;
+	disabled: boolean;
 }
 
-const Card: React.FC<CardProps> = ({
+const Card: React.FC<CardProps> = React.memo(({
 	item,
 	handleSelectedCards,
 	toggled,
-	stopflip = false,
+	stopFlip = false,
+	disabled,
 }) => {
+
+	const handleOnClick = useCallback(()=> {
+	 (!disabled && !stopFlip) && handleSelectedCards(item)
+	},[disabled, handleSelectedCards, item, stopFlip])
+
 	return (
 		<div className='item'>
 			<div className={toggled ? 'toggled' : 'item'}>
@@ -25,11 +32,13 @@ const Card: React.FC<CardProps> = ({
 				</div>
 				<div
 					className='back'
-					onClick={() => !stopflip && handleSelectedCards(item)}
+					onClick={handleOnClick}
 				/>
 			</div>
 		</div>
 	);
-};
+});
+
+Card.displayName = 'Card';
 
 export default Card;

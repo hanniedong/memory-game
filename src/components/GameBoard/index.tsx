@@ -56,23 +56,47 @@ const GameBoard: React.FC = () => {
 		setStopFlip(false);
 	}, []);
 
-	const determineWinner = useCallback(() => {
-		if (playerPairs > computerPairs) {
-			setWinner(Winner.YOU);
-		} else if (playerPairs < computerPairs) {
-			setWinner(Winner.COMPUTER);
-		} else {
-			setWinner(Winner.DRAW);
-		}
-	}, [playerPairs, computerPairs]);
+	const determineWinner = useCallback(
+		(pairs: number, opponentPairs: number) => {
+			let winner;
+			if (currentPlayer === Player.PLAYER) {
+				if (pairs > opponentPairs) {
+					winner = Winner.YOU;
+				} else if (pairs < opponentPairs) {
+					winner = Winner.COMPUTER;
+				} else {
+					winner = Winner.DRAW;
+				}
+			} else {
+				if (opponentPairs > pairs) {
+					winner = Winner.YOU;
+				} else if (opponentPairs < pairs) {
+					winner = Winner.COMPUTER;
+				} else {
+					winner = Winner.DRAW;
+				}
+			}
+
+			setWinner(winner);
+		},
+		[currentPlayer]
+	);
 
 	const updatePairs = useCallback(() => {
-		currentPlayer === Player.PLAYER
-			? setPlayerPairs((prev) => prev + 1)
-			: setComputerPairs((prev) => prev + 1);
+		const updatePairsHelper = (setPairs: Function, opponentPairs: number) => {
+			setPairs((prevPairs: number) => {
+				const updatedPairs = prevPairs + 1;
+				if ((updatedPairs + opponentPairs) * 2 === cardsArray.length) {
+					determineWinner(updatedPairs, opponentPairs);
+				}
+				return updatedPairs;
+			});
+		};
 
-		if ((playerPairs + computerPairs + 1) * 2 === cardsArray.length) {
-			determineWinner();
+		if (currentPlayer === Player.PLAYER) {
+			updatePairsHelper(setPlayerPairs, computerPairs);
+		} else {
+			updatePairsHelper(setComputerPairs, playerPairs);
 		}
 	}, [
 		cardsArray.length,
@@ -153,10 +177,10 @@ const GameBoard: React.FC = () => {
 			return; // If all pairs have been matched, stop the game
 		}
 
-		const cards = pickCardsForComputer();
+		const computerCards = pickCardsForComputer();
 
-		if (cards) {
-			const [firstUnmatchedCard, secondUnmatchedCard] = cards;
+		if (computerCards) {
+			const [firstUnmatchedCard, secondUnmatchedCard] = computerCards;
 			const firstCardTimeoutId = setTimeout(() => {
 				handleSelectedCards(firstUnmatchedCard);
 			}, 1000);
@@ -219,7 +243,6 @@ const GameBoard: React.FC = () => {
 							<p className='text'>{winner} won!</p>
 						</div>
 					)}
-
 				{(playerPairs + computerPairs) * 2 === cardsArray.length &&
 					winner === Winner.DRAW && (
 						<div className='comments'>
@@ -261,4 +284,5 @@ const GameBoard: React.FC = () => {
 		</div>
 	);
 };
+
 export default GameBoard;
